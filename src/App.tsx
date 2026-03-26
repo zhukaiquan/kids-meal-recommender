@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useMealPlanner } from "./hooks/useMealPlanner";
+import { FoodLibraryPage } from "./pages/FoodLibraryPage";
 
 const tabs = [
   { id: "today", label: "Today" },
@@ -10,6 +12,7 @@ type TabId = (typeof tabs)[number]["id"];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("today");
+  const planner = useMealPlanner();
 
   return (
     <main className="app-shell">
@@ -44,7 +47,7 @@ export default function App() {
           aria-labelledby={`${tab.id}-tab`}
           hidden={tab.id !== activeTab}
         >
-          <h2>{tab.label}</h2>
+          {tab.id === "food-library" ? <FoodLibraryPage planner={planner} /> : <h2>{tab.label}</h2>}
         </section>
       ))}
     </main>
