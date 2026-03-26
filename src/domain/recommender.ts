@@ -16,6 +16,7 @@ type EngineInput = {
   history: DailyPlan[];
   exclusions: DailyExclusions;
   random?: RandomFn;
+  updatedAt?: string;
 };
 
 type RefreshInput = {
@@ -25,6 +26,7 @@ type RefreshInput = {
   history: DailyPlan[];
   exclusions: DailyExclusions;
   random?: RandomFn;
+  updatedAt?: string;
 };
 
 const TEMPLATES: Record<MealType, FoodTag[][]> = {
@@ -34,6 +36,10 @@ const TEMPLATES: Record<MealType, FoodTag[][]> = {
 };
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
+
+type MealPickResult =
+  | { ok: true; meal: MealRecommendation }
+  | { ok: false; missingTags: FoodTag[] };
 
 export function buildEmptyExclusions(date: string): DailyExclusions {
   return { date, breakfast: [], lunch: [], dinner: [] };
@@ -73,8 +79,12 @@ function buildRecentFoodSet(history: DailyPlan[], date: string): Set<string> {
   );
 }
 
-function buildMissingTags(mealType: MealType): FoodTag[] {
-  return [...new Set(TEMPLATES[mealType].flat())];
+function normalizeExclusions(exclusions: DailyExclusions, activeDate: string): DailyExclusions {
+  if (exclusions.date === activeDate) {
+    return exclusions;
+  }
+
+  return buildEmptyExclusions(activeDate);
 }
 
 function pickMeal(
@@ -84,7 +94,7 @@ function pickMeal(
   exclusions: string[],
   usedToday: Set<string>,
   random: RandomFn,
-): MealRecommendation | null {
+): MealPickResult {
   const selected: FoodItem[] = [];
 
   for (const acceptedTags of TEMPLATES[mealType]) {
@@ -115,7 +125,7 @@ function pickMeal(
     const chosen = candidates.find((food) => food.id === chosenId);
 
     if (!chosen) {
-      return null;
+      return { ok: false, missingTags: acceptedTags };
     }
 
     selected.push(chosen);
@@ -123,54 +133,59 @@ function pickMeal(
   }
 
   return {
-    mealType,
-    foods: selected.map((food) => ({
-      foodId: food.id,
-      foodNameSnapshot: food.name,
-      tags: food.tags,
-    })),
+    ok: true,
+    meal: {
+      mealType,
+      foods: selected.map((food) => ({
+        foodId: food.id,
+        foodNameSnapshot: food.name,
+        tags: food.tags,
+      })),
+    },
   };
 }
 
 export function generateDailyPlan(input: EngineInput): GenerationResult {
   const random = input.random ?? Math.random;
   const recentFoodIds = buildRecentFoodSet(input.history, input.date);
+  const exclusions = normalizeExclusions(input.exclusions, input.date);
   const usedToday = new Set<string>();
 
-  const breakfast = pickMeal("breakfast", input.foods, recentFoodIds, input.exclusions.breakfast, usedToday, random);
-  if (!breakfast) {
-    return { ok: false, error: { mealType: "breakfast", missingTags: buildMissingTags("breakfast") } };
+  const breakfast = pickMeal("breakfast", input.foods, recentFoodIds, exclusions.breakfast, usedToday, random);
+  if (!breakfast.ok) {
+    return { ok: false, error: { mealType: "breakfast", missingTags: breakfast.missingTags } };
   }
 
-  const lunch = pickMeal("lunch", input.foods, recentFoodIds, input.exclusions.lunch, usedToday, random);
-  if (!lunch) {
-    return { ok: false, error: { mealType: "lunch", missingTags: buildMissingTags("lunch") } };
+  const lunch = pickMeal("lunch", input.foods, recentFoodIds, exclusions.lunch, usedToday, random);
+  if (!lunch.ok) {
+    return { ok: false, error: { mealType: "lunch", missingTags: lunch.missingTags } };
   }
 
-  const dinner = pickMeal("dinner", input.foods, recentFoodIds, input.exclusions.dinner, usedToday, random);
-  if (!dinner) {
-    return { ok: false, error: { mealType: "dinner", missingTags: buildMissingTags("dinner") } };
+  const dinner = pickMeal("dinner", input.foods, recentFoodIds, exclusions.dinner, usedToday, random);
+  if (!dinner.ok) {
+    return { ok: false, error: { mealType: "dinner", missingTags: dinner.missingTags } };
   }
 
   return {
     ok: true,
-    exclusions: input.exclusions,
+    exclusions,
     plan: {
       date: input.date,
-      breakfast,
-      lunch,
-      dinner,
-      updatedAt: new Date().toISOString(),
+      breakfast: breakfast.meal,
+      lunch: lunch.meal,
+      dinner: dinner.meal,
+      updatedAt: input.updatedAt ?? `${input.date}T00:00:00.000Z`,
     },
   };
 }
 
 export function refreshMeal(input: RefreshInput): GenerationResult {
   const currentMeal = input.currentPlan[input.mealType];
+  const exclusions = normalizeExclusions(input.exclusions, input.currentPlan.date);
   const nextExclusions: DailyExclusions = {
-    ...input.exclusions,
+    ...exclusions,
     [input.mealType]: [
-      ...new Set([...input.exclusions[input.mealType], ...currentMeal.foods.map((food) => food.foodId)]),
+      ...new Set([...exclusions[input.mealType], ...currentMeal.foods.map((food) => food.foodId)]),
     ],
   };
   const random = input.random ?? Math.random;
@@ -191,10 +206,10 @@ export function refreshMeal(input: RefreshInput): GenerationResult {
     random,
   );
 
-  if (!regeneratedMeal) {
+  if (!regeneratedMeal.ok) {
     return {
       ok: false,
-      error: { mealType: input.mealType, missingTags: buildMissingTags(input.mealType) },
+      error: { mealType: input.mealType, missingTags: regeneratedMeal.missingTags },
     };
   }
 
@@ -203,8 +218,8 @@ export function refreshMeal(input: RefreshInput): GenerationResult {
     exclusions: nextExclusions,
     plan: {
       ...input.currentPlan,
-      [input.mealType]: regeneratedMeal,
-      updatedAt: new Date().toISOString(),
+      [input.mealType]: regeneratedMeal.meal,
+      updatedAt: input.updatedAt ?? input.currentPlan.updatedAt,
     },
   };
 }

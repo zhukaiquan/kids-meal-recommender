@@ -186,4 +186,65 @@ describe("recommender", () => {
 
     expect(refreshedResult.plan.lunch.foods.map((food) => food.foodId)).toEqual(["rice", "beef", "broccoli"]);
   });
+
+  it("reports only the tags for the slot that cannot be filled", () => {
+    const foodsWithoutBreakfastFruitOrDrink = foods.filter((food) => !["banana", "milk"].includes(food.id));
+
+    const result = generateDailyPlan({
+      date: "2026-03-26",
+      foods: foodsWithoutBreakfastFruitOrDrink,
+      history: [],
+      exclusions: buildEmptyExclusions("2026-03-26"),
+      random: sequenceRandom([0, 0]),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        mealType: "breakfast",
+        missingTags: ["fruit", "drink"],
+      },
+    });
+  });
+
+  it("normalizes stale exclusion dates to the active date", () => {
+    const result = generateDailyPlan({
+      date: "2026-03-26",
+      foods,
+      history: [],
+      exclusions: {
+        date: "2026-03-25",
+        breakfast: ["toast"],
+        lunch: ["rice"],
+        dinner: ["beef"],
+      },
+      random: sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.exclusions).toEqual(buildEmptyExclusions("2026-03-26"));
+    expect(result.plan.breakfast.foods.map((food) => food.foodId)).toContain("toast");
+  });
+
+  it("uses the provided updatedAt instead of reading the wall clock", () => {
+    const result = generateDailyPlan({
+      date: "2026-03-26",
+      foods,
+      history: [],
+      exclusions: buildEmptyExclusions("2026-03-26"),
+      random: sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+      updatedAt: "2026-03-26T08:30:00.000Z",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.plan.updatedAt).toBe("2026-03-26T08:30:00.000Z");
+  });
 });
