@@ -8,7 +8,8 @@ type FoodLibraryPageProps = {
 };
 
 export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
-  const [editingFood, setEditingFood] = useState<(typeof planner.foods)[number] | null>(null);
+  const [editingFoodId, setEditingFoodId] = useState<string | null>(null);
+  const editingFood = planner.foods.find((food) => food.id === editingFoodId) ?? null;
 
   return (
     <section>
@@ -17,16 +18,23 @@ export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
         key={editingFood?.id ?? "new"}
         initialValue={editingFood}
         submitLabel={editingFood ? "Save food" : "Add food"}
-        onCancel={editingFood ? () => setEditingFood(null) : undefined}
+        onCancel={editingFood ? () => setEditingFoodId(null) : undefined}
         onSubmit={(draft) => {
-          if (editingFood) {
+          if (editingFoodId) {
+            const latestFood = planner.foods.find((food) => food.id === editingFoodId);
+
+            if (!latestFood) {
+              setEditingFoodId(null);
+              return;
+            }
+
             planner.updateFood({
-              ...editingFood,
+              ...latestFood,
               name: draft.name,
               mealTypes: draft.mealTypes,
               tags: draft.tags,
             });
-            setEditingFood(null);
+            setEditingFoodId(null);
             return;
           }
 
@@ -35,9 +43,15 @@ export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
       />
       <FoodTable
         foods={planner.foods}
-        onEdit={setEditingFood}
+        onEdit={(food) => setEditingFoodId(food.id)}
         onToggleEnabled={(food) => planner.updateFood({ ...food, enabled: !food.enabled })}
-        onDelete={planner.deleteFood}
+        onDelete={(foodId) => {
+          planner.deleteFood(foodId);
+
+          if (foodId === editingFoodId) {
+            setEditingFoodId(null);
+          }
+        }}
       />
     </section>
   );

@@ -26,13 +26,17 @@ export function FoodTable({ foods, onEdit, onToggleEnabled, onDelete }: FoodTabl
             <td>{food.mealTypes.join(", ")}</td>
             <td>{food.tags.join(", ")}</td>
             <td>
-              <button type="button" onClick={() => onEdit(food)}>
+              <button type="button" aria-label={`Edit ${food.name}`} onClick={() => onEdit(food)}>
                 Edit
               </button>
-              <button type="button" onClick={() => onToggleEnabled(food)}>
+              <button
+                type="button"
+                aria-label={`${food.enabled ? "Disable" : "Enable"} ${food.name}`}
+                onClick={() => onToggleEnabled(food)}
+              >
                 {food.enabled ? "Disable" : "Enable"}
               </button>
-              <button type="button" onClick={() => onDelete(food.id)}>
+              <button type="button" aria-label={`Delete ${food.name}`} onClick={() => onDelete(food.id)}>
                 Delete
               </button>
             </td>
