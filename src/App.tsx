@@ -1,12 +1,17 @@
 import { useState } from "react";
-import "./index.css";
 
-const tabs = ["Today", "Food Library", "History"] as const;
+const tabs = [
+  { id: "today", label: "Today" },
+  { id: "food-library", label: "Food Library" },
+  { id: "history", label: "History" },
+] as const;
 
-type Tab = (typeof tabs)[number];
+type TabId = (typeof tabs)[number]["id"];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>("Today");
+  const [activeTab, setActiveTab] = useState<TabId>("today");
+  const panelId = "meal-panel";
+  const activeTabConfig = tabs.find((tab) => tab.id === activeTab);
 
   return (
     <main className="app-shell">
@@ -15,21 +20,30 @@ export default function App() {
         <p>Generate breakfast, lunch, and dinner without rethinking the whole day.</p>
       </header>
 
-      <nav className="tab-list" aria-label="Primary">
+      <nav className="tab-list" aria-label="Primary" role="tablist">
         {tabs.map((tab) => (
           <button
-            key={tab}
+            key={tab.id}
             type="button"
-            className={tab === activeTab ? "tab is-active" : "tab"}
-            onClick={() => setActiveTab(tab)}
+            id={`${tab.id}-tab`}
+            role="tab"
+            className={tab.id === activeTab ? "tab is-active" : "tab"}
+            aria-selected={tab.id === activeTab}
+            aria-controls={panelId}
+            onClick={() => setActiveTab(tab.id)}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </nav>
 
-      <section className="panel">
-        <h2>{activeTab}</h2>
+      <section
+        className="panel"
+        id={panelId}
+        role="tabpanel"
+        aria-labelledby={`${activeTab}-tab`}
+      >
+        <h2>{activeTabConfig?.label}</h2>
       </section>
     </main>
   );
