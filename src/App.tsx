@@ -10,8 +10,6 @@ type TabId = (typeof tabs)[number]["id"];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("today");
-  const panelId = "meal-panel";
-  const activeTabConfig = tabs.find((tab) => tab.id === activeTab);
 
   return (
     <main className="app-shell">
@@ -29,7 +27,7 @@ export default function App() {
             role="tab"
             className={tab.id === activeTab ? "tab is-active" : "tab"}
             aria-selected={tab.id === activeTab}
-            aria-controls={panelId}
+            aria-controls={`${tab.id}-panel`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -37,14 +35,18 @@ export default function App() {
         ))}
       </nav>
 
-      <section
-        className="panel"
-        id={panelId}
-        role="tabpanel"
-        aria-labelledby={`${activeTab}-tab`}
-      >
-        <h2>{activeTabConfig?.label}</h2>
-      </section>
+      {tabs.map((tab) => (
+        <section
+          key={tab.id}
+          className="panel"
+          id={`${tab.id}-panel`}
+          role="tabpanel"
+          aria-labelledby={`${tab.id}-tab`}
+          hidden={tab.id !== activeTab}
+        >
+          <h2>{tab.label}</h2>
+        </section>
+      ))}
     </main>
   );
 }

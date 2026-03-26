@@ -19,10 +19,26 @@ describe("App", () => {
     await user.click(screen.getByRole("tab", { name: "Food Library" }));
 
     expect(
+      screen.getByRole("tab", { name: "Today", selected: false }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("tab", { name: "Food Library", selected: true }),
     ).toBeInTheDocument();
     expect(screen.getByRole("tabpanel", { name: "Food Library" })).toHaveTextContent(
       "Food Library",
     );
+
+    await user.click(screen.getByRole("tab", { name: "History" }));
+
+    expect(
+      screen.getByRole("tab", { name: "Food Library", selected: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "History", selected: true }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tabpanel", { name: "History" })).toHaveTextContent(
+      "History",
+    );
+    expect(document.getElementById("today-panel")).toHaveAttribute("hidden");
   });
 });
