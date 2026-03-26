@@ -17,7 +17,11 @@ function readJson<T>(key: string, fallback: T): T {
     return fallback;
   }
 
-  return JSON.parse(raw) as T;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 export function loadState(): PersistedState {
