@@ -139,4 +139,51 @@ describe("recommender", () => {
     expect(refreshedResult.plan.breakfast).toEqual(originalBreakfast);
     expect(refreshedResult.plan.dinner).toEqual(originalDinner);
   });
+
+  it("does not penalize foods from later meals when refreshing lunch", () => {
+    const currentPlan: DailyPlan = {
+      date: "2026-03-26",
+      breakfast: {
+        mealType: "breakfast",
+        foods: [
+          { foodId: "toast", foodNameSnapshot: "Toast", tags: ["staple"] },
+          { foodId: "milk", foodNameSnapshot: "Milk", tags: ["dairy", "drink"] },
+          { foodId: "banana", foodNameSnapshot: "Banana", tags: ["fruit"] },
+        ],
+      },
+      lunch: {
+        mealType: "lunch",
+        foods: [
+          { foodId: "noodles", foodNameSnapshot: "Noodles", tags: ["staple"] },
+          { foodId: "tofu", foodNameSnapshot: "Tofu", tags: ["protein"] },
+          { foodId: "carrot", foodNameSnapshot: "Carrot", tags: ["vegetable"] },
+        ],
+      },
+      dinner: {
+        mealType: "dinner",
+        foods: [
+          { foodId: "rice", foodNameSnapshot: "Rice", tags: ["staple"] },
+          { foodId: "beef", foodNameSnapshot: "Beef", tags: ["protein"] },
+          { foodId: "broccoli", foodNameSnapshot: "Broccoli", tags: ["vegetable"] },
+        ],
+      },
+      updatedAt: "2026-03-26T12:00:00.000Z",
+    };
+
+    const refreshedResult = refreshMeal({
+      mealType: "lunch",
+      currentPlan,
+      foods,
+      history: [],
+      exclusions: buildEmptyExclusions("2026-03-26"),
+      random: sequenceRandom([0, 0.6, 0]),
+    });
+
+    expect(refreshedResult.ok).toBe(true);
+    if (!refreshedResult.ok) {
+      return;
+    }
+
+    expect(refreshedResult.plan.lunch.foods.map((food) => food.foodId)).toEqual(["rice", "beef", "broccoli"]);
+  });
 });

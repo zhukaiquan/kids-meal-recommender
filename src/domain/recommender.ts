@@ -175,8 +175,9 @@ export function refreshMeal(input: RefreshInput): GenerationResult {
   };
   const random = input.random ?? Math.random;
   const recentFoodIds = buildRecentFoodSet(input.history, input.currentPlan.date);
+  const refreshMealIndex = MEAL_TYPES.indexOf(input.mealType);
   const usedToday = new Set(
-    MEAL_TYPES.filter((mealType) => mealType !== input.mealType)
+    MEAL_TYPES.slice(0, refreshMealIndex)
       .flatMap((mealType) => input.currentPlan[mealType].foods)
       .map((food) => food.foodId),
   );
