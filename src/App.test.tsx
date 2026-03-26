@@ -2,6 +2,7 @@ import userEvent from "@testing-library/user-event";
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { TodayPage } from "./pages/TodayPage";
 
 const foods = [
   { id: "toast", name: "Toast", mealTypes: ["breakfast"], tags: ["staple"], enabled: true },
@@ -14,6 +15,12 @@ const foods = [
   { id: "noodles", name: "Noodles", mealTypes: ["lunch", "dinner"], tags: ["staple"], enabled: true },
   { id: "tofu", name: "Tofu", mealTypes: ["lunch", "dinner"], tags: ["protein"], enabled: true },
   { id: "carrot", name: "Carrot", mealTypes: ["lunch", "dinner"], tags: ["vegetable"], enabled: true },
+];
+
+const insufficientFoods = [
+  { id: "toast", name: "Toast", mealTypes: ["breakfast"], tags: ["staple"], enabled: true },
+  { id: "egg", name: "Egg", mealTypes: ["breakfast"], tags: ["protein"], enabled: true },
+  { id: "banana", name: "Banana", mealTypes: ["breakfast"], tags: ["fruit"], enabled: true },
 ];
 
 function mockRandomSequence(values: number[]) {
@@ -41,6 +48,44 @@ describe("App", () => {
 
     expect(
       screen.getByText("Add some foods before generating today's meals."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a loading state instead of the failure message before initial generation completes", () => {
+    const ensureTodayPlan = vi.fn();
+
+    render(
+      <TodayPage
+        planner={
+          {
+            foods,
+            plans: [],
+            todayPlan: null,
+            todayPlanStatus: "loading",
+            addFood: vi.fn(),
+            updateFood: vi.fn(),
+            deleteFood: vi.fn(),
+            ensureTodayPlan,
+            refreshTodayMeal: vi.fn(),
+          } as never
+        }
+      />,
+    );
+
+    expect(ensureTodayPlan).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Generating today's meals...")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Not enough tagged foods to generate all three meals yet."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the failure message after generation cannot produce all three meals", async () => {
+    localStorage.setItem("foodItems", JSON.stringify(insufficientFoods));
+
+    render(<App />);
+
+    expect(
+      await screen.findByText("Not enough tagged foods to generate all three meals yet."),
     ).toBeInTheDocument();
   });
 

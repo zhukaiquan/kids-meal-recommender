@@ -14,15 +14,43 @@ function createFoodId(name: string) {
   return `${name.toLowerCase().replace(/\s+/g, "-")}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
+function createTodayGenerationKey(date: string, foods: FoodItem[]) {
+  return JSON.stringify({
+    date,
+    foods: foods.map((food) => ({
+      id: food.id,
+      name: food.name,
+      enabled: food.enabled,
+      mealTypes: [...food.mealTypes].sort(),
+      tags: [...food.tags].sort(),
+    })),
+  });
+}
+
 export function useMealPlanner() {
   const initial = useMemo(() => loadState(), []);
+  const today = getLocalDateKey();
+  const initialGenerationKey = createTodayGenerationKey(today, initial.foods);
   const [foods, setFoods] = useState<FoodItem[]>(initial.foods);
   const [plans, setPlans] = useState(initial.plans);
   const [exclusions, setExclusions] = useState<DailyExclusions[]>(initial.exclusions);
+  const [lastAttemptedGenerationKey, setLastAttemptedGenerationKey] = useState<string | null>(() =>
+    initial.foods.length === 0 || initial.plans.some((plan) => plan.date === today)
+      ? initialGenerationKey
+      : null,
+  );
 
-  const today = getLocalDateKey();
+  const generationKey = useMemo(() => createTodayGenerationKey(today, foods), [today, foods]);
   const todayPlan = plans.find((plan) => plan.date === today) ?? null;
   const todayExclusions = exclusions.find((item) => item.date === today) ?? buildEmptyExclusions(today);
+  const todayPlanStatus =
+    foods.length === 0
+      ? "empty"
+      : todayPlan
+        ? "ready"
+        : lastAttemptedGenerationKey === generationKey
+          ? "failed"
+          : "loading";
 
   function addFood(draft: FoodDraft) {
     const nextFoods = [
@@ -55,6 +83,13 @@ export function useMealPlanner() {
   }
 
   function ensureTodayPlan() {
+    if (foods.length === 0) {
+      setLastAttemptedGenerationKey(generationKey);
+      return;
+    }
+
+    setLastAttemptedGenerationKey(generationKey);
+
     if (todayPlan) {
       return;
     }
@@ -109,6 +144,7 @@ export function useMealPlanner() {
     foods,
     plans,
     todayPlan,
+    todayPlanStatus,
     addFood,
     updateFood,
     deleteFood,

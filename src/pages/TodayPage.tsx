@@ -11,7 +11,7 @@ export function TodayPage({ planner }: TodayPageProps) {
     planner.ensureTodayPlan();
   }, [planner]);
 
-  if (planner.foods.length === 0) {
+  if (planner.todayPlanStatus === "empty") {
     return (
       <section>
         <h2>Today</h2>
@@ -20,7 +20,16 @@ export function TodayPage({ planner }: TodayPageProps) {
     );
   }
 
-  if (!planner.todayPlan) {
+  if (planner.todayPlanStatus === "loading") {
+    return (
+      <section>
+        <h2>Today</h2>
+        <p>Generating today's meals...</p>
+      </section>
+    );
+  }
+
+  if (planner.todayPlanStatus === "failed" || !planner.todayPlan) {
     return (
       <section>
         <h2>Today</h2>
