@@ -247,4 +247,58 @@ describe("recommender", () => {
 
     expect(result.plan.updatedAt).toBe("2026-03-26T08:30:00.000Z");
   });
+
+  it("reports slot-level missing tags when refresh fails after date normalization", () => {
+    const foodsWithoutAlternateLunchStaple = foods.filter((food) => food.id !== "noodles");
+    const currentPlan: DailyPlan = {
+      date: "2026-03-26",
+      breakfast: {
+        mealType: "breakfast",
+        foods: [
+          { foodId: "toast", foodNameSnapshot: "Toast", tags: ["staple"] },
+          { foodId: "milk", foodNameSnapshot: "Milk", tags: ["dairy", "drink"] },
+          { foodId: "banana", foodNameSnapshot: "Banana", tags: ["fruit"] },
+        ],
+      },
+      lunch: {
+        mealType: "lunch",
+        foods: [
+          { foodId: "rice", foodNameSnapshot: "Rice", tags: ["staple"] },
+          { foodId: "beef", foodNameSnapshot: "Beef", tags: ["protein"] },
+          { foodId: "broccoli", foodNameSnapshot: "Broccoli", tags: ["vegetable"] },
+        ],
+      },
+      dinner: {
+        mealType: "dinner",
+        foods: [
+          { foodId: "noodles", foodNameSnapshot: "Noodles", tags: ["staple"] },
+          { foodId: "tofu", foodNameSnapshot: "Tofu", tags: ["protein"] },
+          { foodId: "carrot", foodNameSnapshot: "Carrot", tags: ["vegetable"] },
+        ],
+      },
+      updatedAt: "2026-03-26T12:00:00.000Z",
+    };
+
+    const result = refreshMeal({
+      mealType: "lunch",
+      currentPlan,
+      foods: foodsWithoutAlternateLunchStaple,
+      history: [],
+      exclusions: {
+        date: "2026-03-25",
+        breakfast: ["toast"],
+        lunch: ["noodles"],
+        dinner: ["beef"],
+      },
+      random: sequenceRandom([0]),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        mealType: "lunch",
+        missingTags: ["staple"],
+      },
+    });
+  });
 });
