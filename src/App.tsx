@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMealPlanner } from "./hooks/useMealPlanner";
 import { FoodLibraryPage } from "./pages/FoodLibraryPage";
+import { TodayPage } from "./pages/TodayPage";
 
 const tabs = [
   { id: "today", label: "Today" },
@@ -13,6 +14,23 @@ type TabId = (typeof tabs)[number]["id"];
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("today");
   const planner = useMealPlanner();
+
+  function renderPanel(tabId: TabId) {
+    if (tabId === "today") {
+      return <TodayPage planner={planner} />;
+    }
+
+    if (tabId === "food-library") {
+      return <FoodLibraryPage planner={planner} />;
+    }
+
+    return (
+      <section>
+        <h2>History</h2>
+        <p>Meal history is coming soon.</p>
+      </section>
+    );
+  }
 
   return (
     <main className="app-shell">
@@ -47,7 +65,7 @@ export default function App() {
           aria-labelledby={`${tab.id}-tab`}
           hidden={tab.id !== activeTab}
         >
-          {tab.id === "food-library" ? <FoodLibraryPage planner={planner} /> : <h2>{tab.label}</h2>}
+          {renderPanel(tab.id)}
         </section>
       ))}
     </main>
