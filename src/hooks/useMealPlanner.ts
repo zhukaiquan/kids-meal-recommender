@@ -2,12 +2,14 @@ import { useMemo, useState } from "react";
 import { getLocalDateKey } from "../domain/date";
 import { buildEmptyExclusions, generateDailyPlan, refreshMeal } from "../domain/recommender";
 import { loadState, saveExclusions, saveFoods, savePlan } from "../domain/storage";
-import type { DailyExclusions, FoodItem, FoodTag, MealType } from "../domain/types";
+import type { DailyExclusions, FoodImage, FoodItem, FoodTag, MealType } from "../domain/types";
 
 export type FoodDraft = {
   name: string;
   mealTypes: MealType[];
   tags: FoodTag[];
+  enabled: boolean;
+  image: FoodImage | null;
 };
 
 function createFoodId(name: string) {
@@ -60,8 +62,8 @@ export function useMealPlanner() {
         name: draft.name,
         mealTypes: draft.mealTypes,
         tags: draft.tags,
-        enabled: true,
-        image: null,
+        enabled: draft.enabled,
+        image: draft.image,
       },
     ];
 

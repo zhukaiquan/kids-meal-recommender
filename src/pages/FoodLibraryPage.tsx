@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { FoodCardGrid } from "../components/FoodCardGrid";
 import { FoodForm } from "../components/FoodForm";
-import { FoodTable } from "../components/FoodTable";
 import { useMealPlanner } from "../hooks/useMealPlanner";
 
 type FoodLibraryPageProps = {
@@ -13,11 +13,11 @@ export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
 
   return (
     <section>
-      <h2>Food Library</h2>
+      <h2>食物库</h2>
       <FoodForm
         key={editingFood?.id ?? "new"}
         initialValue={editingFood}
-        submitLabel={editingFood ? "Save food" : "Add food"}
+        submitLabel={editingFood ? "保存食物" : "添加食物"}
         onCancel={editingFood ? () => setEditingFoodId(null) : undefined}
         onSubmit={(draft) => {
           if (editingFoodId) {
@@ -33,6 +33,8 @@ export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
               name: draft.name,
               mealTypes: draft.mealTypes,
               tags: draft.tags,
+              enabled: draft.enabled,
+              image: draft.image,
             });
             setEditingFoodId(null);
             return;
@@ -41,7 +43,7 @@ export function FoodLibraryPage({ planner }: FoodLibraryPageProps) {
           planner.addFood(draft);
         }}
       />
-      <FoodTable
+      <FoodCardGrid
         foods={planner.foods}
         onEdit={(food) => setEditingFoodId(food.id)}
         onToggleEnabled={(food) => planner.updateFood({ ...food, enabled: !food.enabled })}

@@ -1,6 +1,8 @@
-import { useState } from "react";
-import type { FoodItem, FoodTag, MealType } from "../domain/types";
+import { useEffect, useState } from "react";
+import { mealLabels, tagLabels } from "../content/cn";
+import type { FoodImage, FoodItem, FoodTag, MealType } from "../domain/types";
 import type { FoodDraft } from "../hooks/useMealPlanner";
+import { FoodImagePicker } from "./FoodImagePicker";
 
 const mealTypes: MealType[] = ["breakfast", "lunch", "dinner"];
 const tags: FoodTag[] = ["staple", "protein", "vegetable", "fruit", "dairy", "drink"];
@@ -26,7 +28,17 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
   const [name, setName] = useState(initialValue?.name ?? "");
   const [selectedMeals, setSelectedMeals] = useState<MealType[]>(initialValue?.mealTypes ?? []);
   const [selectedTags, setSelectedTags] = useState<FoodTag[]>(initialValue?.tags ?? []);
+  const [enabled, setEnabled] = useState(initialValue?.enabled ?? true);
+  const [selectedImage, setSelectedImage] = useState<FoodImage | null>(initialValue?.image ?? null);
   const [errors, setErrors] = useState<FoodFormErrors>({});
+
+  useEffect(() => {
+    setName(initialValue?.name ?? "");
+    setSelectedMeals(initialValue?.mealTypes ?? []);
+    setSelectedTags(initialValue?.tags ?? []);
+    setEnabled(initialValue?.enabled ?? true);
+    setSelectedImage(initialValue?.image ?? null);
+  }, [initialValue]);
 
   return (
     <form
@@ -36,15 +48,15 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
         const nextErrors: FoodFormErrors = {};
 
         if (!trimmedName) {
-          nextErrors.name = "Food name is required.";
+          nextErrors.name = "请输入食物名称。";
         }
 
         if (selectedMeals.length === 0) {
-          nextErrors.mealTypes = "Select at least one meal type.";
+          nextErrors.mealTypes = "请至少选择一个适用餐次。";
         }
 
         if (selectedTags.length === 0) {
-          nextErrors.tags = "Select at least one tag.";
+          nextErrors.tags = "请至少选择一个标签。";
         }
 
         if (Object.keys(nextErrors).length > 0) {
@@ -53,22 +65,31 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
         }
 
         setErrors({});
-        onSubmit({ name: trimmedName, mealTypes: selectedMeals, tags: selectedTags });
-        setName("");
-        setSelectedMeals([]);
-        setSelectedTags([]);
+        onSubmit({
+          name: trimmedName,
+          mealTypes: selectedMeals,
+          tags: selectedTags,
+          enabled,
+          image: selectedImage,
+        });
+
+        if (!initialValue) {
+          setName("");
+          setSelectedMeals([]);
+          setSelectedTags([]);
+          setEnabled(true);
+          setSelectedImage(null);
+        }
       }}
     >
-      <input
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        placeholder="Food name"
-        aria-label="Food name"
-      />
+      <label>
+        食物名称
+        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：鸡蛋羹" aria-label="食物名称" />
+      </label>
       {errors.name ? <p role="alert">{errors.name}</p> : null}
 
       <fieldset>
-        <legend>Meals</legend>
+        <legend>适用餐次</legend>
         {mealTypes.map((meal) => (
           <label key={meal}>
             <input
@@ -76,14 +97,14 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
               checked={selectedMeals.includes(meal)}
               onChange={() => toggleValue(meal, selectedMeals, setSelectedMeals)}
             />
-            {meal}
+            {mealLabels[meal]}
           </label>
         ))}
       </fieldset>
       {errors.mealTypes ? <p role="alert">{errors.mealTypes}</p> : null}
 
       <fieldset>
-        <legend>Tags</legend>
+        <legend>食物标签</legend>
         {tags.map((tag) => (
           <label key={tag}>
             <input
@@ -91,16 +112,23 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
               checked={selectedTags.includes(tag)}
               onChange={() => toggleValue(tag, selectedTags, setSelectedTags)}
             />
-            {tag}
+            {tagLabels[tag]}
           </label>
         ))}
       </fieldset>
       {errors.tags ? <p role="alert">{errors.tags}</p> : null}
 
+      <label>
+        <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
+        启用这个食物
+      </label>
+
+      <FoodImagePicker keyword={name} value={selectedImage} onChange={setSelectedImage} />
+
       <button type="submit">{submitLabel}</button>
       {onCancel ? (
         <button type="button" onClick={onCancel}>
-          Cancel
+          取消
         </button>
       ) : null}
     </form>
