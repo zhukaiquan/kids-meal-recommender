@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMealPlanner } from "./hooks/useMealPlanner";
 import { FoodLibraryPage } from "./pages/FoodLibraryPage";
+import { HistoryPage } from "./pages/HistoryPage";
 import { TodayPage } from "./pages/TodayPage";
 
 const tabs = [
@@ -24,12 +25,7 @@ export default function App() {
       return <FoodLibraryPage planner={planner} />;
     }
 
-    return (
-      <section>
-        <h2>History</h2>
-        <p>Meal history is coming soon.</p>
-      </section>
-    );
+    return <HistoryPage planner={planner} />;
   }
 
   return (

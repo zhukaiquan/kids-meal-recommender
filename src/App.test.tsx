@@ -110,4 +110,37 @@ describe("App", () => {
     expect(within(getMealCard("Dinner")).getByRole("list")).toHaveTextContent(dinnerText ?? "");
     expect(within(getMealCard("Lunch")).getByRole("list").textContent).not.toBe(lunchText);
   });
+
+  it("shows prior accepted plans in history", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem(
+      "dailyPlans",
+      JSON.stringify([
+        {
+          date: "2026-03-25",
+          breakfast: {
+            mealType: "breakfast",
+            foods: [{ foodId: "toast", foodNameSnapshot: "Toast", tags: ["staple"] }],
+          },
+          lunch: {
+            mealType: "lunch",
+            foods: [{ foodId: "rice", foodNameSnapshot: "Rice", tags: ["staple"] }],
+          },
+          dinner: {
+            mealType: "dinner",
+            foods: [{ foodId: "beef", foodNameSnapshot: "Beef", tags: ["protein"] }],
+          },
+          updatedAt: "2026-03-25T08:00:00.000Z",
+        },
+      ]),
+    );
+
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "History" }));
+
+    expect(screen.getByText("2026-03-25")).toBeInTheDocument();
+    expect(screen.getByText("Breakfast: Toast")).toBeInTheDocument();
+    expect(screen.getByText("Lunch: Rice")).toBeInTheDocument();
+    expect(screen.getByText("Dinner: Beef")).toBeInTheDocument();
+  });
 });
