@@ -24,9 +24,16 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
+function normalizeFood(food: FoodItem): FoodItem {
+  return {
+    ...food,
+    image: food.image ?? null,
+  };
+}
+
 export function loadState(): PersistedState {
   return {
-    foods: readJson(FOODS_KEY, [] as FoodItem[]),
+    foods: readJson(FOODS_KEY, [] as FoodItem[]).map(normalizeFood),
     plans: readJson(PLANS_KEY, [] as DailyPlan[]),
     exclusions: readJson(EXCLUSIONS_KEY, [] as DailyExclusions[]),
   };

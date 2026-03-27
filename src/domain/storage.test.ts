@@ -17,7 +17,14 @@ describe("storage", () => {
 
   it("round-trips foods, plans, and exclusions", () => {
     const foods: FoodItem[] = [
-      { id: "egg", name: "Egg", mealTypes: ["breakfast"], tags: ["protein"], enabled: true },
+      {
+        id: "egg",
+        name: "Egg",
+        mealTypes: ["breakfast"],
+        tags: ["protein"],
+        enabled: true,
+        image: null,
+      },
     ];
     const plan: DailyPlan = {
       date: "2026-03-26",
@@ -45,6 +52,34 @@ describe("storage", () => {
       plans: [plan],
       exclusions: [exclusions],
     });
+  });
+
+  it("hydrates legacy food items without images", () => {
+    localStorage.setItem(
+      "foodItems",
+      JSON.stringify([
+        {
+          id: "egg",
+          name: "鸡蛋",
+          mealTypes: ["breakfast"],
+          tags: ["protein"],
+          enabled: true,
+        },
+      ]),
+    );
+
+    const state = loadState();
+
+    expect(state.foods).toEqual([
+      {
+        id: "egg",
+        name: "鸡蛋",
+        mealTypes: ["breakfast"],
+        tags: ["protein"],
+        enabled: true,
+        image: null,
+      },
+    ]);
   });
 
   it("replaces saved plans and exclusions for the same date", () => {

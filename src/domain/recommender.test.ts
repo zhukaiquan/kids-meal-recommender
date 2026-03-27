@@ -3,16 +3,23 @@ import { buildEmptyExclusions, generateDailyPlan, refreshMeal } from "./recommen
 import type { DailyPlan, FoodItem } from "./types";
 
 const foods: FoodItem[] = [
-  { id: "toast", name: "Toast", mealTypes: ["breakfast"], tags: ["staple"], enabled: true },
-  { id: "egg", name: "Egg", mealTypes: ["breakfast", "lunch", "dinner"], tags: ["protein"], enabled: true },
-  { id: "milk", name: "Milk", mealTypes: ["breakfast"], tags: ["dairy", "drink"], enabled: true },
-  { id: "banana", name: "Banana", mealTypes: ["breakfast"], tags: ["fruit"], enabled: true },
-  { id: "rice", name: "Rice", mealTypes: ["lunch", "dinner"], tags: ["staple"], enabled: true },
-  { id: "beef", name: "Beef", mealTypes: ["lunch", "dinner"], tags: ["protein"], enabled: true },
-  { id: "broccoli", name: "Broccoli", mealTypes: ["lunch", "dinner"], tags: ["vegetable"], enabled: true },
-  { id: "noodles", name: "Noodles", mealTypes: ["lunch", "dinner"], tags: ["staple"], enabled: true },
-  { id: "tofu", name: "Tofu", mealTypes: ["lunch", "dinner"], tags: ["protein"], enabled: true },
-  { id: "carrot", name: "Carrot", mealTypes: ["lunch", "dinner"], tags: ["vegetable"], enabled: true },
+  { id: "toast", name: "Toast", mealTypes: ["breakfast"], tags: ["staple"], enabled: true, image: null },
+  {
+    id: "egg",
+    name: "Egg",
+    mealTypes: ["breakfast", "lunch", "dinner"],
+    tags: ["protein"],
+    enabled: true,
+    image: null,
+  },
+  { id: "milk", name: "Milk", mealTypes: ["breakfast"], tags: ["dairy", "drink"], enabled: true, image: null },
+  { id: "banana", name: "Banana", mealTypes: ["breakfast"], tags: ["fruit"], enabled: true, image: null },
+  { id: "rice", name: "Rice", mealTypes: ["lunch", "dinner"], tags: ["staple"], enabled: true, image: null },
+  { id: "beef", name: "Beef", mealTypes: ["lunch", "dinner"], tags: ["protein"], enabled: true, image: null },
+  { id: "broccoli", name: "Broccoli", mealTypes: ["lunch", "dinner"], tags: ["vegetable"], enabled: true, image: null },
+  { id: "noodles", name: "Noodles", mealTypes: ["lunch", "dinner"], tags: ["staple"], enabled: true, image: null },
+  { id: "tofu", name: "Tofu", mealTypes: ["lunch", "dinner"], tags: ["protein"], enabled: true, image: null },
+  { id: "carrot", name: "Carrot", mealTypes: ["lunch", "dinner"], tags: ["vegetable"], enabled: true, image: null },
 ];
 
 const historyPlan: DailyPlan = {

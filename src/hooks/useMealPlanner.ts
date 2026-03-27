@@ -61,6 +61,7 @@ export function useMealPlanner() {
         mealTypes: draft.mealTypes,
         tags: draft.tags,
         enabled: true,
+        image: null,
       },
     ];
 

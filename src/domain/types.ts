@@ -8,12 +8,23 @@ export type FoodTag =
   | "dairy"
   | "drink";
 
+export type FoodImage = {
+  thumbnailUrl: string;
+  fullUrl: string;
+  sourceName: "wikimedia-commons";
+  sourcePageUrl: string;
+  authorName: string | null;
+  license: string | null;
+  searchQuery: string;
+};
+
 export type FoodItem = {
   id: string;
   name: string;
   mealTypes: MealType[];
   tags: FoodTag[];
   enabled: boolean;
+  image: FoodImage | null;
 };
 
 export type MealFoodSnapshot = {
