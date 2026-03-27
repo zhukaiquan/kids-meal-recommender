@@ -12,7 +12,7 @@ A minimal React app that helps a parent decide breakfast, lunch, and dinner for 
 ## Deployment
 
 - Production URL: `https://zhukaiquan.github.io/kids-meal-recommender/`
-- Pushes to `main` trigger the GitHub Pages workflow in `.github/workflows/deploy.yml`
+- Static files are published to the `gh-pages` branch for GitHub Pages hosting
 
 ## Core Behaviors
 
