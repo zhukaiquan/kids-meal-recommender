@@ -5,9 +5,9 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { TodayPage } from "./pages/TodayPage";
 
 const tabs = [
-  { id: "today", label: "Today" },
-  { id: "food-library", label: "Food Library" },
-  { id: "history", label: "History" },
+  { id: "today", label: "今日推荐" },
+  { id: "food-library", label: "食物库" },
+  { id: "history", label: "历史记录" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -31,11 +31,12 @@ export default function App() {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <h1>Kids Meal Recommender</h1>
-        <p>Generate breakfast, lunch, and dinner without rethinking the whole day.</p>
+        <p className="app-eyebrow">儿童餐食小帮手</p>
+        <h1>今天给孩子吃什么？</h1>
+        <p>打开就能看到早餐、午餐和晚餐灵感，不用每天重新想一遍。</p>
       </header>
 
-      <nav className="tab-list" aria-label="Primary" role="tablist">
+      <nav className="tab-list" aria-label="主导航" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}

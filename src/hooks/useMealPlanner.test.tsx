@@ -21,9 +21,9 @@ const tagLabels = {
 
 async function openFoodLibrary(user: ReturnType<typeof userEvent.setup>) {
   render(<App />);
-  await user.click(screen.getByRole("tab", { name: "Food Library" }));
+  await user.click(screen.getByRole("tab", { name: "食物库" }));
 
-  return screen.getByRole("tabpanel", { name: "Food Library" });
+  return screen.getByRole("tabpanel", { name: "食物库" });
 }
 
 async function addFoodWithForm(
@@ -34,7 +34,7 @@ async function addFoodWithForm(
     tags?: string[];
   },
 ) {
-  const panel = screen.getByRole("tabpanel", { name: "Food Library" });
+  const panel = screen.getByRole("tabpanel", { name: "食物库" });
 
   await user.clear(within(panel).getByLabelText("食物名称"));
   await user.type(within(panel).getByLabelText("食物名称"), options.name);
@@ -220,21 +220,21 @@ describe("useMealPlanner", () => {
     const user = userEvent.setup();
     const { unmount } = render(<App />);
 
-    await user.click(screen.getByRole("tab", { name: "Food Library" }));
+    await user.click(screen.getByRole("tab", { name: "食物库" }));
     await addFoodWithForm(user, {
       name: "Rice",
       meals: ["lunch"],
       tags: ["staple"],
     });
 
-    expect(screen.getByRole("tabpanel", { name: "Food Library" })).toHaveTextContent("Rice");
+    expect(screen.getByRole("tabpanel", { name: "食物库" })).toHaveTextContent("Rice");
 
     unmount();
 
     const secondUser = userEvent.setup();
     render(<App />);
-    await secondUser.click(screen.getByRole("tab", { name: "Food Library" }));
+    await secondUser.click(screen.getByRole("tab", { name: "食物库" }));
 
-    expect(screen.getByRole("tabpanel", { name: "Food Library" })).toHaveTextContent("Rice");
+    expect(screen.getByRole("tabpanel", { name: "食物库" })).toHaveTextContent("Rice");
   });
 });
