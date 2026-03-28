@@ -129,8 +129,27 @@ describe("useMealPlanner", () => {
       tags: ["staple"],
     });
 
-    expect(within(panel).queryByText("   ")).not.toBeInTheDocument();
+    expect(within(panel).getByRole("alert")).toHaveTextContent("请输入食物名称。");
     expect(JSON.parse(localStorage.getItem("foodItems") ?? "[]")).toHaveLength(0);
+  });
+
+  it("renders visual hooks for food cards and tag pills", async () => {
+    const user = userEvent.setup();
+    const panel = await openFoodLibrary(user);
+
+    await addFoodWithForm(user, {
+      name: "Rice",
+      meals: ["lunch"],
+      tags: ["staple", "protein"],
+    });
+
+    const grid = within(panel).getByLabelText("食物卡片列表");
+    const card = within(grid).getByText("Rice").closest("article");
+
+    expect(grid).toHaveClass("food-card-grid");
+    expect(card).toHaveClass("food-card");
+    expect(within(card as HTMLElement).getByText("主食")).toHaveClass("food-card__tag-pill");
+    expect(within(card as HTMLElement).getByText("蛋白质")).toHaveClass("food-card__tag-pill");
   });
 
   it("does not add a food without a meal type", async () => {

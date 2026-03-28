@@ -11,23 +11,31 @@ type FoodCardGridProps = {
 
 export function FoodCardGrid({ foods, onEdit, onToggleEnabled, onDelete }: FoodCardGridProps) {
   if (foods.length === 0) {
-    return <p>还没有食物，先添加一个吧。</p>;
+    return <p className="food-card-grid__empty-state">还没有食物，先添加一个吧。</p>;
   }
 
   return (
-    <div aria-label="食物卡片列表">
+    <div className="food-card-grid" aria-label="食物卡片列表">
       {foods.map((food) => (
-        <article key={food.id}>
-          <FoodImage image={food.image} alt={food.name} />
-          <h3>{food.name}</h3>
-          <p>{food.enabled ? "已启用" : "已停用"}</p>
-          <p>{food.mealTypes.map((mealType) => mealLabels[mealType]).join(" / ")}</p>
-          <div>
+        <article key={food.id} className="food-card">
+          <div className="food-card__image">
+            <FoodImage image={food.image} alt={food.name} />
+          </div>
+          <div className="food-card__body">
+            <h3 className="food-card__title">{food.name}</h3>
+            <p className="food-card__status">{food.enabled ? "已启用" : "已停用"}</p>
+            <p className="food-card__meals">
+              {food.mealTypes.map((mealType) => mealLabels[mealType]).join(" / ")}
+            </p>
+          </div>
+          <div className="food-card__tags">
             {food.tags.map((tag) => (
-              <span key={tag}>{tagLabels[tag]}</span>
+              <span key={tag} className="food-card__tag-pill">
+                {tagLabels[tag]}
+              </span>
             ))}
           </div>
-          <div>
+          <div className="food-card__actions">
             <button type="button" aria-label={`编辑 ${food.name}`} onClick={() => onEdit(food)}>
               编辑
             </button>
