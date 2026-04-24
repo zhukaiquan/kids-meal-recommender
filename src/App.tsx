@@ -4,24 +4,25 @@ import { FoodLibraryPage } from "./pages/FoodLibraryPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { TodayPage } from "./pages/TodayPage";
 
-const tabs = [
-  { id: "today", label: "今日推荐" },
-  { id: "food-library", label: "食物库" },
-  { id: "history", label: "历史记录" },
+const views = [
+  { id: "today", label: "今日翻牌", ariaLabel: "回到今日翻牌" },
+  { id: "food-library", label: "家长食物库", ariaLabel: "打开家长食物库" },
+  { id: "history", label: "菜单历史", ariaLabel: "查看菜单历史" },
 ] as const;
 
-type TabId = (typeof tabs)[number]["id"];
+type ViewId = (typeof views)[number]["id"];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>("today");
+  const [activeView, setActiveView] = useState<ViewId>("today");
   const planner = useMealPlanner();
+  const activeViewLabel = views.find((view) => view.id === activeView)?.label ?? "今日翻牌";
 
-  function renderPanel(tabId: TabId) {
-    if (tabId === "today") {
+  function renderView(viewId: ViewId) {
+    if (viewId === "today") {
       return <TodayPage planner={planner} />;
     }
 
-    if (tabId === "food-library") {
+    if (viewId === "food-library") {
       return <FoodLibraryPage planner={planner} />;
     }
 
@@ -30,41 +31,39 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <p className="app-eyebrow">儿童餐食小帮手</p>
-        <h1>今天给孩子吃什么？</h1>
-        <p>打开就能看到早餐、午餐和晚餐灵感，不用每天重新想一遍。</p>
+      <header className="kitchen-hero">
+        <div className="kitchen-hero__copy">
+          <p className="app-eyebrow">亲子菜单小游戏</p>
+          <h1>绘本厨房开饭啦</h1>
+          <p>翻开早餐、午餐和晚餐卡，和孩子一起决定今天吃什么。</p>
+        </div>
+        <div className="kitchen-hero__scene" aria-hidden="true">
+          <span className="kitchen-hero__sun" />
+          <span className="kitchen-hero__chef">小熊厨师</span>
+          <span className="kitchen-hero__pan" />
+        </div>
       </header>
 
-      <nav className="tab-list" aria-label="主导航" role="tablist">
-        {tabs.map((tab) => (
+      <nav className="parent-nav" aria-label="家长区">
+        {views.map((view) => (
           <button
-            key={tab.id}
+            key={view.id}
             type="button"
-            id={`${tab.id}-tab`}
-            role="tab"
-            className={tab.id === activeTab ? "tab is-active" : "tab"}
-            aria-selected={tab.id === activeTab}
-            aria-controls={`${tab.id}-panel`}
-            onClick={() => setActiveTab(tab.id)}
+            aria-label={view.ariaLabel}
+            className={view.id === activeView ? "parent-nav__button is-active" : "parent-nav__button"}
+            onClick={() => setActiveView(view.id)}
           >
-            {tab.label}
+            {view.label}
           </button>
         ))}
       </nav>
 
-      {tabs.map((tab) => (
-        <section
-          key={tab.id}
-          className="panel"
-          id={`${tab.id}-panel`}
-          role="tabpanel"
-          aria-labelledby={`${tab.id}-tab`}
-          hidden={tab.id !== activeTab}
-        >
-          {renderPanel(tab.id)}
-        </section>
-      ))}
+      <section
+        className={activeView === "today" ? "game-panel" : "parent-panel"}
+        aria-label={activeViewLabel}
+      >
+        {renderView(activeView)}
+      </section>
     </main>
   );
 }

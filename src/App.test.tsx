@@ -33,23 +33,18 @@ function mockRandomSequence(values: number[]) {
   });
 }
 
-function getMealCard(name: string) {
-  return screen.getByRole("article", { name });
-}
-
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
   });
 
-  it("shows the empty state when no foods exist", () => {
+  it("shows the kitchen empty state when no foods exist", () => {
     render(<App />);
 
-    expect(screen.getByRole("tab", { name: "今日推荐" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "食物库" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "历史记录" })).toBeInTheDocument();
-    expect(screen.getByText("先添加一些食物，再生成今天的三餐推荐。")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "绘本厨房开饭啦" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "打开家长食物库" })).toBeInTheDocument();
+    expect(screen.getByText("小厨房还没有食物卡，先去家长区添加孩子爱吃的东西。")).toBeInTheDocument();
   });
 
   it("shows a loading state instead of the failure message before initial generation completes", () => {
@@ -74,7 +69,7 @@ describe("App", () => {
     );
 
     expect(ensureTodayPlan).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("正在准备今天的小菜单...")).toBeInTheDocument();
+    expect(screen.getByText("小厨师正在洗牌...")).toBeInTheDocument();
     expect(screen.queryByText("当前标签还不够，暂时无法拼出完整的三餐。")).not.toBeInTheDocument();
   });
 
@@ -86,26 +81,61 @@ describe("App", () => {
     expect(await screen.findByText("当前标签还不够，暂时无法拼出完整的三餐。")).toBeInTheDocument();
   });
 
-  it("refreshes only the selected meal", async () => {
+  it("keeps meal cards face down until a child flips them", async () => {
     const user = userEvent.setup();
     localStorage.setItem("foodItems", JSON.stringify(foods));
     mockRandomSequence([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     render(<App />);
 
-    const breakfastCard = await screen.findByRole("article", { name: "早餐" });
-    const lunchCard = screen.getByRole("article", { name: "午餐" });
-    const dinnerCard = screen.getByRole("article", { name: "晚餐" });
+    expect(await screen.findByRole("button", { name: "翻开早餐卡" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "翻开午餐卡" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "翻开晚餐卡" })).toBeInTheDocument();
+    expect(screen.queryByText("吐司")).not.toBeInTheDocument();
 
-    const breakfastText = within(breakfastCard).getByText("吐司").textContent;
-    const lunchText = within(lunchCard).getByText(/米饭|面条/).textContent;
-    const dinnerText = within(dinnerCard).getByText(/米饭|面条/).textContent;
+    await user.click(screen.getByRole("button", { name: "翻开早餐卡" }));
 
-    await user.click(screen.getByRole("button", { name: "换一个午餐" }));
+    const breakfastCard = screen.getByRole("article", { name: "早餐卡" });
+    expect(within(breakfastCard).getByText("吐司")).toBeInTheDocument();
+    expect(within(breakfastCard).getByRole("button", { name: "早餐就吃这个" })).toBeInTheDocument();
+    expect(within(breakfastCard).getByRole("button", { name: "再抽一张早餐卡" })).toBeInTheDocument();
+  });
 
-    expect(within(getMealCard("早餐")).getByText(breakfastText ?? "")).toBeInTheDocument();
-    expect(within(getMealCard("晚餐")).getByText(dinnerText ?? "")).toBeInTheDocument();
-    expect(within(getMealCard("午餐")).queryByText(lunchText ?? "")).not.toBeInTheDocument();
+  it("refreshes a flipped meal card without revealing the other cards", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("foodItems", JSON.stringify(foods));
+    mockRandomSequence([0, 0, 0, 0, 0, 0, 0.9, 0, 0]);
+
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "翻开午餐卡" }));
+
+    const lunchCard = screen.getByRole("article", { name: "午餐卡" });
+    const firstLunch = within(lunchCard).getByText(/米饭|面条/).textContent;
+
+    await user.click(within(lunchCard).getByRole("button", { name: "再抽一张午餐卡" }));
+
+    expect(within(lunchCard).queryByText(firstLunch ?? "")).not.toBeInTheDocument();
+    expect(screen.queryByText("吐司")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "翻开晚餐卡" })).toBeInTheDocument();
+  });
+
+  it("celebrates when all three cards are confirmed", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("foodItems", JSON.stringify(foods));
+    mockRandomSequence([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "翻开早餐卡" }));
+    await user.click(screen.getByRole("button", { name: "早餐就吃这个" }));
+    await user.click(screen.getByRole("button", { name: "翻开午餐卡" }));
+    await user.click(screen.getByRole("button", { name: "午餐就吃这个" }));
+    await user.click(screen.getByRole("button", { name: "翻开晚餐卡" }));
+    await user.click(screen.getByRole("button", { name: "晚餐就吃这个" }));
+
+    expect(screen.getByText("今日小厨师任务完成")).toBeInTheDocument();
+    expect(screen.getByText("三张菜单卡都选好啦，今天照着这份菜单采购和准备就行。")).toBeInTheDocument();
   });
 
   it("shows food images in history when available", async () => {
@@ -154,7 +184,7 @@ describe("App", () => {
     );
 
     render(<App />);
-    await user.click(screen.getByRole("tab", { name: "历史记录" }));
+    await user.click(screen.getByRole("button", { name: "查看菜单历史" }));
 
     const historyCard = screen.getByText("2026-03-25").closest("article");
 
