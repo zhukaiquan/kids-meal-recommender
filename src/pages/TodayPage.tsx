@@ -48,6 +48,9 @@ export function TodayPage({ planner }: TodayPageProps) {
       <section className="kitchen-state">
         <h2>还没有食物卡</h2>
         <p>小厨房还没有食物卡，先去家长区添加孩子爱吃的东西。</p>
+        <button type="button" className="demo-food-button" onClick={planner.loadDemoFoods}>
+          使用试玩示例食物卡
+        </button>
       </section>
     );
   }

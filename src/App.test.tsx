@@ -44,7 +44,22 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "绘本厨房开饭啦" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "打开家长食物库" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "使用试玩示例食物卡" })).toBeInTheDocument();
     expect(screen.getByText("小厨房还没有食物卡，先去家长区添加孩子爱吃的东西。")).toBeInTheDocument();
+  });
+
+  it("loads demo foods from the empty state so the card game can be tried immediately", async () => {
+    const user = userEvent.setup();
+    mockRandomSequence([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "使用试玩示例食物卡" }));
+
+    expect(await screen.findByRole("button", { name: "翻开早餐卡" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "翻开午餐卡" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "翻开晚餐卡" })).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem("foodItems") ?? "[]")).toHaveLength(16);
   });
 
   it("shows a loading state instead of the failure message before initial generation completes", () => {

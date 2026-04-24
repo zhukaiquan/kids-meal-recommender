@@ -314,6 +314,27 @@ form button:hover {
   text-align: center;
 }
 
+.demo-food-button {
+  justify-self: center;
+  min-height: 52px;
+  margin-top: 8px;
+  border: 3px solid #24323a;
+  border-radius: 8px;
+  background: #ffd84d;
+  color: #24323a;
+  padding: 11px 16px;
+  font-weight: 900;
+  box-shadow: 4px 4px 0 #24323a;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.demo-food-button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #24323a;
+}
+
 .meal-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

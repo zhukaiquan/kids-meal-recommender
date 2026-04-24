@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { demoFoods } from "../content/demoFoods";
 import { getLocalDateKey } from "../domain/date";
 import { buildEmptyExclusions, generateDailyPlan, refreshMeal } from "../domain/recommender";
 import { loadState, saveExclusions, saveFoods, savePlan } from "../domain/storage";
@@ -85,6 +86,16 @@ export function useMealPlanner() {
     saveFoods(nextFoods);
   }
 
+  function loadDemoFoods() {
+    if (foods.length > 0) {
+      return;
+    }
+
+    setFoods(demoFoods);
+    saveFoods(demoFoods);
+    setLastAttemptedGenerationKey(null);
+  }
+
   function ensureTodayPlan() {
     if (foods.length === 0) {
       setLastAttemptedGenerationKey(generationKey);
@@ -151,6 +162,7 @@ export function useMealPlanner() {
     addFood,
     updateFood,
     deleteFood,
+    loadDemoFoods,
     ensureTodayPlan,
     refreshTodayMeal,
   };
