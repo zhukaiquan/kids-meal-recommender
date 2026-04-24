@@ -133,9 +133,18 @@ describe("useMealPlanner", () => {
     expect(JSON.parse(localStorage.getItem("foodItems") ?? "[]")).toHaveLength(0);
   });
 
-  it("renders visual hooks for food cards and tag pills", async () => {
+  it("renders clear parent controls for meal choices, nutrition roles, and images", async () => {
     const user = userEvent.setup();
     const panel = await openFoodLibrary(user);
+
+    expect(within(panel).getByText("这道食物适合哪一餐？")).toBeInTheDocument();
+    expect(within(panel).getByText("它在餐盘里扮演什么角色？")).toBeInTheDocument();
+    expect(within(panel).getByText("肉、蛋、鱼、豆制品")).toBeInTheDocument();
+
+    const imagePicker = within(panel).getByRole("region", { name: "食物图片选择" });
+    expect(within(imagePicker).getByRole("button", { name: "搜索图片" })).toHaveClass("image-picker__search");
+    expect(within(imagePicker).getByRole("button", { name: "不设置图片" })).toHaveClass("image-picker__clear");
+    expect(within(panel).getByRole("button", { name: "添加食物" })).toHaveClass("form-submit-button");
 
     await addFoodWithForm(user, {
       name: "Rice",

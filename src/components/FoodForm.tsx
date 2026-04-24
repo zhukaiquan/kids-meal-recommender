@@ -7,6 +7,15 @@ import { FoodImagePicker } from "./FoodImagePicker";
 const mealTypes: MealType[] = ["breakfast", "lunch", "dinner"];
 const tags: FoodTag[] = ["staple", "protein", "vegetable", "fruit", "dairy", "drink"];
 
+const tagHints: Record<FoodTag, string> = {
+  staple: "米饭、面、粥、土豆",
+  protein: "肉、蛋、鱼、豆制品",
+  vegetable: "绿叶菜、菌菇、根茎菜",
+  fruit: "水果、果泥、果盘",
+  dairy: "牛奶、酸奶、奶酪",
+  drink: "水、汤、豆浆",
+};
+
 type FoodFormProps = {
   initialValue?: FoodItem | null;
   submitLabel: string;
@@ -56,7 +65,7 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
         }
 
         if (selectedTags.length === 0) {
-          nextErrors.tags = "请至少选择一个标签。";
+          nextErrors.tags = "请至少选择一个营养角色。";
         }
 
         if (Object.keys(nextErrors).length > 0) {
@@ -81,56 +90,86 @@ export function FoodForm({ initialValue, submitLabel, onSubmit, onCancel }: Food
           setSelectedImage(null);
         }
       }}
+      className="food-form"
     >
-      <label>
-        食物名称
-        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：鸡蛋羹" aria-label="食物名称" />
-      </label>
-      {errors.name ? <p role="alert">{errors.name}</p> : null}
+      <section className="food-form__section">
+        <label className="food-form__name">
+          <span>食物名称</span>
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="例如：鸡蛋羹"
+            aria-label="食物名称"
+          />
+        </label>
+        {errors.name ? <p role="alert">{errors.name}</p> : null}
+      </section>
 
-      <fieldset>
-        <legend>适用餐次</legend>
-        {mealTypes.map((meal) => (
-          <label key={meal}>
-            <input
-              type="checkbox"
-              checked={selectedMeals.includes(meal)}
-              onChange={() => toggleValue(meal, selectedMeals, setSelectedMeals)}
-            />
-            {mealLabels[meal]}
-          </label>
-        ))}
+      <fieldset className="food-form__section food-form__choice-group">
+        <legend>
+          <span>这道食物适合哪一餐？</span>
+          <small>可以多选，例如鸡蛋既能做早餐也能做晚餐。</small>
+        </legend>
+        <div className="food-form__choices food-form__choices--meals">
+          {mealTypes.map((meal) => (
+            <label key={meal} className="choice-chip choice-chip--meal">
+              <input
+                type="checkbox"
+                aria-label={mealLabels[meal]}
+                checked={selectedMeals.includes(meal)}
+                onChange={() => toggleValue(meal, selectedMeals, setSelectedMeals)}
+              />
+              <span>{mealLabels[meal]}</span>
+            </label>
+          ))}
+        </div>
       </fieldset>
       {errors.mealTypes ? <p role="alert">{errors.mealTypes}</p> : null}
 
-      <fieldset>
-        <legend>食物标签</legend>
-        {tags.map((tag) => (
-          <label key={tag}>
-            <input
-              type="checkbox"
-              checked={selectedTags.includes(tag)}
-              onChange={() => toggleValue(tag, selectedTags, setSelectedTags)}
-            />
-            {tagLabels[tag]}
-          </label>
-        ))}
+      <fieldset className="food-form__section food-form__choice-group">
+        <legend>
+          <span>它在餐盘里扮演什么角色？</span>
+          <small>推荐算法会按这些角色组合出一餐。</small>
+        </legend>
+        <div className="food-form__choices food-form__choices--tags">
+          {tags.map((tag) => (
+            <label key={tag} className="choice-chip choice-chip--tag">
+              <input
+                type="checkbox"
+                aria-label={tagLabels[tag]}
+                checked={selectedTags.includes(tag)}
+                onChange={() => toggleValue(tag, selectedTags, setSelectedTags)}
+              />
+              <span>{tagLabels[tag]}</span>
+              <small>{tagHints[tag]}</small>
+            </label>
+          ))}
+        </div>
       </fieldset>
       {errors.tags ? <p role="alert">{errors.tags}</p> : null}
 
-      <label>
-        <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
-        启用这个食物
-      </label>
+      <section className="food-form__section food-form__status">
+        <label className="switch-row">
+          <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
+          <span>
+            启用这个食物
+            <small>关闭后不会出现在每日翻牌推荐里。</small>
+          </span>
+        </label>
+      </section>
 
       <FoodImagePicker keyword={name} value={selectedImage} onChange={setSelectedImage} />
 
-      <button type="submit">{submitLabel}</button>
-      {onCancel ? (
-        <button type="button" onClick={onCancel}>
-          取消
+      <footer className="food-form__actions">
+        <button type="submit" className="form-submit-button">
+          {submitLabel}
         </button>
-      ) : null}
+        {onCancel ? (
+          <button type="button" className="form-secondary-button" onClick={onCancel}>
+            取消
+          </button>
+        ) : null}
+      </footer>
     </form>
   );
 }
